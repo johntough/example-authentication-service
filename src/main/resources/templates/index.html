@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head><title>Home</title></head>
+<body>
+<h1>Welcome</h1>
+<p sec:authorize="isAuthenticated()">
+    Hello, <span th:text="${#authentication.name}"></span>
+</p>
+
+<p sec:authorize="!isAuthenticated()">
+    <a href="/oauth2/authorization/google">Login with Google</a>
+</p>
+</body>
+</html>

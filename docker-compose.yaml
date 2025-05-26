@@ -1,0 +1,19 @@
+services:
+  example-authentication-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: environment-variables/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - sqlite-data:/data
+    networks:
+      - app-network
+
+volumes:
+  sqlite-data:
+
+networks:
+  app-network:
+    driver: bridge
