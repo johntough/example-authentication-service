@@ -20,7 +20,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(auth -> auth
-             .requestMatchers("/").permitAll()
+             .requestMatchers("/", "/css/**").permitAll()
              .anyRequest().authenticated()
         )
         .oauth2Login(oauth2 ->
@@ -28,6 +28,9 @@ public class SecurityConfig {
                 userInfo ->
                     userInfo.oidcUserService(customOidcUserService)
             )
+        )
+        .logout(logout ->
+            logout.logoutSuccessUrl("/").permitAll()
         );
 
         return httpSecurity.build();
