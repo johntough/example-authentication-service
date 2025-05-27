@@ -109,11 +109,25 @@ Run the unit and integration tests using:
 mvn test
 ```
 
-## Accessing the App
+## 🌐 Accessing the App
 Once running, navigate to:
 
 ```code
 http://localhost:8080
 ```
+### ➡️ 🔐 Sign In
+Upon clicking the Sign-In button you'll be redirected to Google Sign-In. On successful login, a new user is created (if one doesn't already exist), and stored in the SQLite DB with the default role: `ROLE_USER`.
+An `OidcUser` user is created and stored in the `SecurityContext` with the appropriate roles created as per application logic, `ROLE_USER` as default.
 
-You'll be redirected to Google Sign-In. On successful login, a new user is created (if one doesn't already exist), and stored in the SQLite DB.
+```java
+return new DefaultOidcUser(
+    appUser.getAuthorities(),
+    userRequest.getIdToken(),
+    oidcUser.getUserInfo(),
+    "sub"
+);
+```
+
+### ➡️ 🚪👋 Sign Out
+After successful sign in you'll see a Sign-Out button.
+When you trigger logout `/logout`, Spring Security clears the local security context and invalidates the HTTP session in the application. By default, Spring Security does **NOT** log the user out from the Identity Provider (IdP). Therefore the user remains logged into Google (IdP).
