@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -29,27 +32,36 @@ public class CustomOidcUserService extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         OidcUser oidcUser = super.loadUser(userRequest);
+
+        Map<String, Object> claims = new HashMap<>(oidcUser.getClaims());
+        claims.put("idp", userRequest.getClientRegistration().getRegistrationId());
+
         User appUser = findOrCreateUser(oidcUser);
 
         return new DefaultOidcUser(
                 appUser.getAuthorities(),
-                userRequest.getIdToken(),
+                new OidcIdToken(
+                    oidcUser.getIdToken().getTokenValue(),
+                    oidcUser.getIdToken().getIssuedAt(),
+                    oidcUser.getIdToken().getExpiresAt(),
+                    claims
+                ),
                 oidcUser.getUserInfo(),
                 "sub"
         );
     }
 
     private User findOrCreateUser(OidcUser oidcUser) {
-        String googleSubject = oidcUser.getAttribute("sub");
+        String idpSubject = oidcUser.getAttribute("sub");
 
-        return userRepository.findByGoogleSubject(googleSubject).orElseGet(() -> {
+        return userRepository.findByIdpSubject(idpSubject).orElseGet(() -> {
             User newUser = new User();
-            newUser.setGoogleSubject(googleSubject);
+            newUser.setIdpSubject(idpSubject);
             newUser.setEmail(oidcUser.getAttribute("email"));
             newUser.setName(oidcUser.getAttribute("name"));
             newUser.setRoles(Set.of("ROLE_USER"));
 
-            LOGGER.info("Creating new user, Google subject: {}, Name: {}", newUser.getGoogleSubject(), newUser.getName());
+            LOGGER.info("Creating new user, Subject: {}, Name: {}", newUser.getIdpSubject(), newUser.getName());
 
             return userRepository.save(newUser);
         });

@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
 
-    Optional<User> findByGoogleSubject(String googleSubject);
+    Optional<User> findByIdpSubject(String idpSubject);
 }

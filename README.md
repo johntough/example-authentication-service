@@ -1,13 +1,13 @@
 # Example Authentication Service
 
 ## Overview
-This is a Spring Boot application that uses **Spring Security** and **Google OAuth2 / OpenID Connect (OIDC)** for user authentication.
+This is a Spring Boot application that uses **Spring Security** and **OpenID Connect (OIDC)** for user authentication. The app uses both Google and Microsoft as identity providers.
 
 ## 🔐 Authentication Overview
 
-The app integrates with **Google Sign-In** to authenticate users. It uses Spring Security's OAuth2 and OIDC support to handle login, session management, and user identity retrieval.
+The app integrates with **Google** & **Microsoft** to authenticate users. It uses Spring Security's OAuth2 and OIDC support to handle login, session management, and user identity retrieval.
 
-Upon successful authentication with Google, the application:
+Upon successful authentication with Google/Microsoft, the application:
 
 1. Loads the authenticated user's identity using a custom `CustomOidcUserService`.
 2. Checks whether the user already exists in the application database.
@@ -15,7 +15,7 @@ Upon successful authentication with Google, the application:
 4. Returns an authenticated Spring Security `OidcUser` with appropriate roles and attributes.
 
 ### 🛡️ Default Role Assignment
-All new users authenticated via Google are assigned the default role:
+All new users successfully authenticated are assigned the default role:
 
 ```java
 newUser.setRoles(Set.of("ROLE_USER"));
@@ -36,20 +36,11 @@ newUser.setRoles(Set.of("ROLE_USER"));
 
 This class extends `OidcUserService` to customize how authenticated users are handled. It:
 
-- Extracts the user's information (email, name, Google subject ID) from the `OidcUserRequest`.
+- Extracts the user's information (email, name, Google/Microsoft subject ID) from the `OidcUserRequest`.
 - Checks for an existing user in the application's database (`UserRepository`).
 - Creates and saves a new user if one does not already exist.
 - Assigns a default role (`ROLE_USER`) to new users.
 - Wraps the user details into a `DefaultOidcUser` with proper authorities.
-
-```java
-return new DefaultOidcUser(
-    appUser.getAuthorities(),
-    userRequest.getIdToken(),
-    oidcUser.getUserInfo(),
-    "sub"
-);
-```
 
 ## 🚀 Build & Deploy
 This project is built with **Maven**, containerized using **Docker**, and run with **Docker Compose**.
@@ -84,12 +75,24 @@ This will:
 - Mount a persistent SQLite database in a named volume (sqlite-data)
 - Expose the app at http://localhost:8080
 
+## 🔧 Identity Provider (IdP) Setup
+To enable authentication using Google or Microsoft, you must first register your application with each provider and obtain the necessary credentials.
+
+### Google Identity Platform Setup
+Follow the instructions at [Google - OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect) to enable your app to use OpenID Connect (OIDC) authentication with Google. 
+
+###  Microsoft Entra ID Setup
+Follow the instructions at [Microsoft - OpenID Connect](https://learn.microsoft.com/en-us/power-pages/security/authentication/openid-settings#create-an-app-registration-in-azure) to register an application in Microsoft Entra ID to use OpenID Connect (OIDC) authentication with Microsoft.
+
 ### 🔑 OAuth2 Environment Configuration
-You need to create a .env file at environment-variables/.env with your Google OAuth2 credentials:
+You need to create a .env file at `environment-variables/.env` with your Google / Microsoft credentials as per the IdP Setup:
 
 ```code
-CLIENT_ID=your-google-client-id
-CLIENT_SECRET=your-google-client-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+MICROSOFT_CLIENT_ID=your-microsoft-client-id
+MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+MICROSOFT_TENANT_ID=your-microsoft-tenant-id
 ```
 
 These are injected into the app via environment variables and used in application.yaml
@@ -116,18 +119,9 @@ Once running, navigate to:
 http://localhost:8080
 ```
 ### ➡️ 🔐 Sign In
-Upon clicking the Sign-In button you'll be redirected to Google Sign-In. On successful login, a new user is created (if one doesn't already exist), and stored in the SQLite DB with the default role: `ROLE_USER`.
+Upon clicking the Sign-In buttons you'll be redirected to either Google or Microsoft Sign-In,. On successful login, a new user is created (if one doesn't already exist), and stored in the SQLite DB with the default role: `ROLE_USER`.
 An `OidcUser` user is created and stored in the `SecurityContext` with the appropriate roles created as per application logic, `ROLE_USER` as default.
-
-```java
-return new DefaultOidcUser(
-    appUser.getAuthorities(),
-    userRequest.getIdToken(),
-    oidcUser.getUserInfo(),
-    "sub"
-);
-```
 
 ### ➡️ 🚪👋 Sign Out
 After successful sign in you'll see a Sign-Out button.
-When you trigger logout `/logout`, Spring Security clears the local security context and invalidates the HTTP session in the application. By default, Spring Security does **NOT** log the user out from the Identity Provider (IdP). Therefore the user remains logged into Google (IdP).
+When you trigger logout `/logout`, Spring Security clears the local security context and invalidates the HTTP session in the application. By default, Spring Security does **NOT** log the user out from the Identity Provider (IdP). Therefore, the user remains logged into Google / Microsoft (IdP).

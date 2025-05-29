@@ -27,14 +27,14 @@ class UserRepositoryIntegrationTest {
         User user = new User();
         user.setName("test-name");
         user.setEmail("test@email.address");
-        user.setGoogleSubject("test-subject");
+        user.setIdpSubject("test-subject");
         user.setRoles(Set.of("ROLE_USER"));
         User savedUser = userRepository.save(user);
 
         assertNotNull(savedUser.getId());
         assertEquals("test-name", savedUser.getName());
         assertEquals("test@email.address", savedUser.getEmail());
-        assertEquals("test-subject", savedUser.getGoogleSubject());
+        assertEquals("test-subject", savedUser.getIdpSubject());
         assertTrue(savedUser.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
@@ -43,22 +43,22 @@ class UserRepositoryIntegrationTest {
         User user = new User();
         user.setName("test-name");
         user.setEmail("test@email.address");
-        user.setGoogleSubject("test-subject");
+        user.setIdpSubject("test-subject");
         user.setRoles(Set.of("ROLE_USER"));
         User savedUser = userRepository.save(user);
 
-        Optional<User> returnedUser = userRepository.findByGoogleSubject("test-subject");
+        Optional<User> returnedUser = userRepository.findByIdpSubject("test-subject");
         assertTrue(returnedUser.isPresent());
         assertNotNull(savedUser.getId());
         assertEquals("test-name", savedUser.getName());
         assertEquals("test@email.address", savedUser.getEmail());
-        assertEquals("test-subject", savedUser.getGoogleSubject());
+        assertEquals("test-subject", savedUser.getIdpSubject());
         assertTrue(savedUser.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
     @Test
     void testFindByGoogleSubjectNoUsersExist() {
-        Optional<User> users = userRepository.findByGoogleSubject("test-subject");
+        Optional<User> users = userRepository.findByIdpSubject("test-subject");
         assertTrue(users.isEmpty());
     }
 }

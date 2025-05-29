@@ -14,8 +14,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "google_subject", nullable = false, unique = true)
-    private String googleSubject;
+    @Column(name = "idp_subject", nullable = false, unique = true)
+    private String idpSubject;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
@@ -28,9 +28,9 @@ public class User {
 
     public Long getId() { return id; }
 
-    public void setGoogleSubject(String googleSubject) { this.googleSubject = googleSubject; }
+    public void setIdpSubject(String idpSubject) { this.idpSubject = idpSubject; }
 
-    public String getGoogleSubject() { return googleSubject; }
+    public String getIdpSubject() { return idpSubject; }
 
     public String getEmail() { return email; }
 

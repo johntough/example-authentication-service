@@ -41,7 +41,7 @@ class CustomOidcUserServiceTest {
         User user = new User();
         user.setRoles(Set.of("ROLE_USER"));
 
-        when(userRepository.findByGoogleSubject(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findByIdpSubject(anyString())).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(user);
         OidcUserRequest mockRequest = setupSpringSecurityMocks();
 
@@ -58,7 +58,7 @@ class CustomOidcUserServiceTest {
         User user = new User();
         user.setRoles(Set.of("ROLE_USER"));
 
-        when(userRepository.findByGoogleSubject(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByIdpSubject(anyString())).thenReturn(Optional.of(user));
         OidcUserRequest mockRequest = setupSpringSecurityMocks();
 
         OidcUser oidcUser = customOidcUserService.loadUser(mockRequest);
